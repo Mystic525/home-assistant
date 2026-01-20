@@ -650,22 +650,71 @@ function analyzeAndDiscoverAirQuality(bytes, discoveredSensors, mqttClient, save
     }
 }
 
-function analyzeAndDiscoverMetering(bytes,discoveredMeters,mqttClient,saveState) {
-    if(bytes[0] === 0xF7 && bytes[1] === 0x30 &&  bytes.length === 32) {
+// ===== RS-485 스트림 버퍼 =====
+let rxBuffer = Buffer.alloc(0);
 
-        // log(`<- ${bytes.map(byte => byte.toString(16).padStart(2, '0')).join(' ').toUpperCase()}`);
+// serialport.on('data', data) 안에서 호출한다고 가정
+function handleSerialData(data, discoveredMeters, mqttClient, saveState) {
+    // 수신 데이터 누적
+    rxBuffer = Buffer.concat([rxBuffer, data]);
 
-        const water = parseInt(bytes[5].toString(16).padStart(2, '0') + bytes[6].toString(16).padStart(2, '0'),10);
-        const accWater = parseInt(bytes[8].toString(16).padStart(2, '0') + bytes[9].toString(16).padStart(2, '0'),10) / 10;
+    // 패킷 처리 루프
+    while (rxBuffer.length >= 32) {
+        // 패킷 시작(F7 30) 찾기
+        const startIdx = rxBuffer.indexOf(Buffer.from([0xF7, 0x30]));
+        if (startIdx === -1) {
+            // 시작 바이트 없으면 전부 폐기
+            rxBuffer = Buffer.alloc(0);
+            return;
+        }
 
-        const warm = parseInt(bytes[20].toString(16).padStart(2, '0') + bytes[21].toString(16).padStart(2, '0'),10);
-        const accWarm = parseInt(bytes[23].toString(16).padStart(2, '0') + bytes[24].toString(16).padStart(2, '0'),10) / 10;
+        // 아직 패킷 길이가 부족하면 대기
+        if (rxBuffer.length < startIdx + 32) return;
 
-        const electric = parseInt(bytes[15].toString(16).padStart(2, '0') + bytes[16].toString(16).padStart(2, '0'),10);
-        const accElectric = parseInt(bytes[17].toString(16).padStart(2, '0') + bytes[18].toString(16).padStart(2, '0')+ bytes[19].toString(16).padStart(2, '0'),10) / 10;
+        // 정확히 32바이트 패킷 추출
+        const packet = rxBuffer.slice(startIdx, startIdx + 32);
 
-        const heat = parseInt(bytes[25].toString(16).padStart(2, '0') + bytes[26].toString(16).padStart(2, '0'),10) / 10;
-        const accHeat = parseInt(bytes[28].toString(16).padStart(2, '0') + bytes[29].toString(16).padStart(2, '0'),10) / 100;
+        // 버퍼에서 제거
+        rxBuffer = rxBuffer.slice(startIdx + 32);
+
+        // 패킷 파싱
+        analyzeAndDiscoverMetering(packet, discoveredMeters, mqttClient, saveState);
+    }
+}
+
+// ===== 실제 계량 패킷 파서 =====
+function analyzeAndDiscoverMetering(bytes, discoveredMeters, mqttClient, saveState) {
+
+    // 기본 검증
+    if (bytes[0] !== 0xF7 || bytes[1] !== 0x30 || bytes.length !== 32) return;
+
+    // 0x81 = 실시간 계량 데이터
+    if (bytes[3] !== 0x81) return;
+
+    // ---- 실시간 값 (10진수 그대로) ----
+    const water = (bytes[5] << 8) | bytes[6];
+    const electric = (bytes[15] << 8) | bytes[16];
+    const warm = (bytes[20] << 8) | bytes[21];
+    const heat = ((bytes[25] << 8) | bytes[26]) / 10;
+
+    // ---- 누적 값 ----
+    const accWater = ((bytes[8] << 8) | bytes[9]) / 10;
+    const accElectric = (
+        (bytes[17] << 16) |
+        (bytes[18] << 8) |
+        bytes[19]
+    ) / 10;
+    const accWarm = ((bytes[23] << 8) | bytes[24]) / 10;
+    const accHeat = ((bytes[28] << 8) | bytes[29]) / 100;
+
+    // ---- 디버그 로그 (필요 시 활성화) ----
+    /*
+    console.log(
+        `전력:${electric}W / 수도:${water} / 온수:${warm} / 난방:${heat}`
+    );
+    */
+
+    // ---- MQTT / HA 처리 부분은 기존 코드 유지 ----
 
         // log(`실시간 전력 : ${electric} / 실시간 수도 : ${water} / 실시간 온수 : ${warm} / 실시간 난방 : ${heat}`);
         // log(`누적 전력 : ${accElectric} / 누적 수도 : ${accWater} / 누적 온수 : ${accWarm} / 누적 난방 : ${accHeat}`);
