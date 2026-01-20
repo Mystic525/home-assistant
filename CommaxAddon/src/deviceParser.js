@@ -800,7 +800,7 @@ function analyzeAndDiscoverMetering(bytes, discoveredMeters, mqttClient, saveSta
         mqttClient.publish(`${topicPrefix}/smart_metering/heat_meter/state`, heat.toString(), { retain: true });
         mqttClient.publish(`${topicPrefix}/smart_metering/heat_acc_meter/state`, accHeat.toString(), { retain: true });
     }
-}
+
 
 module.exports = {
     analyzeAndDiscoverOutlet,
