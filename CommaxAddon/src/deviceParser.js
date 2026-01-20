@@ -655,21 +655,17 @@ function analyzeAndDiscoverMetering(bytes, discoveredMeters, mqttClient, saveSta
     if (bytes[0] !== 0xF7 || bytes[1] !== 0x30 || bytes.length !== 32) return;
     if (bytes[3] !== 0x81) return;
 
-    const water = (bytes[5] << 8) | bytes[6];
-    const electric = (bytes[15] << 8) | bytes[16];
-    const warm = (bytes[20] << 8) | bytes[21];
-    const heat = ((bytes[25] << 8) | bytes[26]) / 10;
+        const water = parseInt(bytes[5].toString(16).padStart(2, '0') + bytes[6].toString(16).padStart(2, '0'),10);
+        const accWater = parseInt(bytes[8].toString(16).padStart(2, '0') + bytes[9].toString(16).padStart(2, '0'),10) / 10;
 
-    const accWater = ((bytes[8] << 8) | bytes[9]) / 10;
-    const accElectric = (
-        (bytes[17] << 16) |
-        (bytes[18] << 8) |
-        bytes[19]
-    ) ;
-    const accWarm = ((bytes[23] << 8) | bytes[24]) / 10;
-    const accHeat = ((bytes[28] << 8) | bytes[29]) / 100;
+        const warm = parseInt(bytes[20].toString(16).padStart(2, '0') + bytes[21].toString(16).padStart(2, '0'),10);
+        const accWarm = parseInt(bytes[23].toString(16).padStart(2, '0') + bytes[24].toString(16).padStart(2, '0'),10) / 10;
 
-    // 이하 MQTT publish 로직은 기존 코드 유지-
+        const electric = parseInt(bytes[15].toString(16).padStart(2, '0') + bytes[16].toString(16).padStart(2, '0'),10);
+        const accElectric = parseInt(bytes[17].toString(16).padStart(2, '0') + bytes[18].toString(16).padStart(2, '0')+ bytes[19].toString(16).padStart(2, '0'),10) / 10;
+
+        const heat = parseInt(bytes[25].toString(16).padStart(2, '0') + bytes[26].toString(16).padStart(2, '0'),10) / 10;
+        const accHeat = parseInt(bytes[28].toString(16).padStart(2, '0') + bytes[29].toString(16).padStart(2, '0'),10) / 100;
 
         // log(`실시간 전력 : ${electric} / 실시간 수도 : ${water} / 실시간 온수 : ${warm} / 실시간 난방 : ${heat}`);
         // log(`누적 전력 : ${accElectric} / 누적 수도 : ${accWater} / 누적 온수 : ${accWarm} / 누적 난방 : ${accHeat}`);
