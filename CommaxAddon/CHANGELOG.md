@@ -1,6 +1,6 @@
 ## RELEASE NOTES
 ```txt
-1.0.6.1 원격검침 오류 수정_ By ChatGPT
+1.0.6.2 원격검침 오류 수정_ By ChatGPT
 
 1.0.6 실시간 검침 기능 추가 , EW11 타임아웃 시간 연장
 
