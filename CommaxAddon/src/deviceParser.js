@@ -665,7 +665,7 @@ function analyzeAndDiscoverMetering(bytes, discoveredMeters, mqttClient, saveSta
         (bytes[17] << 16) |
         (bytes[18] << 8) |
         bytes[19]
-    ) / 10;
+    ) ;
     const accWarm = ((bytes[23] << 8) | bytes[24]) / 10;
     const accHeat = ((bytes[28] << 8) | bytes[29]) / 100;
 
@@ -734,7 +734,7 @@ function analyzeAndDiscoverMetering(bytes, discoveredMeters, mqttClient, saveSta
                 state_topic: `${topicPrefix}/smart_metering/electric_acc_meter/state`,
                 availability_topic: `${topicPrefix}/smart_metering/electric_acc_meter/availability`,
                 unit_of_measurement: 'kWh',
-                device_class: 'power',
+                device_class: 'energy',
                 precision: 1,
             },
             {
@@ -754,7 +754,7 @@ function analyzeAndDiscoverMetering(bytes, discoveredMeters, mqttClient, saveSta
                 state_topic: `${topicPrefix}/smart_metering/heat_acc_meter/state`,
                 availability_topic: `${topicPrefix}/smart_metering/heat_acc_meter/availability`,
                 unit_of_measurement: 'm³',
-                device_class: 'power',
+                device_class: 'water',
                 precision: 1,
             },
         ];
