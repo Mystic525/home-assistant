@@ -716,7 +716,7 @@ function analyzeAndDiscoverMetering(bytes, discoveredMeters, mqttClient, saveSta
             {
                 id: 'water_acc_meter',
                 name: '누적 수도 사용량',
-                unique_id: 'commax_water_acc_meter',
+                unique_id: 'commax_water_acc_meter_v1',
                 state_topic: `${topicPrefix}/smart_metering/water_acc_meter/state`,
                 availability_topic: `${topicPrefix}/smart_metering/water_acc_meter/availability`,
                 unit_of_measurement: 'm³',
