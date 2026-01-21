@@ -719,7 +719,7 @@ function analyzeAndDiscoverMetering(bytes, discoveredMeters, mqttClient, saveSta
                 unique_id: 'commax_water_acc_meter',
                 state_topic: `${topicPrefix}/smart_metering/water_acc_meter/state`,
                 availability_topic: `${topicPrefix}/smart_metering/water_acc_meter/availability`,
-                unit_of_measurement: 'm³/h',
+                unit_of_measurement: 'm³',
                 device_class: 'water',
                 precision: 1,
             },
