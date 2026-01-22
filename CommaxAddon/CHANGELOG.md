@@ -1,5 +1,7 @@
 ## RELEASE NOTES
 ```txt
+1.0.6.2 가스 센서 추가
+
 1.0.6.1 원격검침 오류 수정_ By ChatGPT
 https://github.com/xepiloss/home-assistant 애드온에서 개인화 수정
 
