@@ -667,6 +667,9 @@ function analyzeAndDiscoverMetering(bytes, discoveredMeters, mqttClient, saveSta
         const heat = parseInt(bytes[25].toString(16).padStart(2, '0') + bytes[26].toString(16).padStart(2, '0'),10) / 10;
         const accHeat = parseInt(bytes[28].toString(16).padStart(2, '0') + bytes[29].toString(16).padStart(2, '0'),10) / 100;
 
+        const gas      	= parseInt(bytes[10].toString(16).padStart(2, '0') + bytes[11].toString(16).padStart(2, '0'),10);
+        const accGas 	= parseInt(bytes[13].toString(16).padStart(2, '0') + bytes[14].toString(16).padStart(2, '0'),10) / 10;
+
         // log(`실시간 전력 : ${electric} / 실시간 수도 : ${water} / 실시간 온수 : ${warm} / 실시간 난방 : ${heat}`);
         // log(`누적 전력 : ${accElectric} / 누적 수도 : ${accWater} / 누적 온수 : ${accWarm} / 누적 난방 : ${accHeat}`);
 
@@ -714,6 +717,16 @@ function analyzeAndDiscoverMetering(bytes, discoveredMeters, mqttClient, saveSta
                 precision: 1,
             },
             {
+                id: 'gas_meter',
+                name: '실시간 가스 사용량',
+                unique_id: 'commax_gas_meter',
+                state_topic: `${topicPrefix}/smart_metering/gas_meter/state`,
+                availability_topic: `${topicPrefix}/smart_metering/gas_meter/availability`,
+                unit_of_measurement: 'm³/h',
+                device_class: 'water',
+                precision: 1,
+            },
+            {
                 id: 'water_acc_meter',
                 name: '누적 수도 사용량',
                 unique_id: 'commax_water_acc_meter_v1',
@@ -749,6 +762,16 @@ function analyzeAndDiscoverMetering(bytes, discoveredMeters, mqttClient, saveSta
                 unique_id: 'commax_heat_acc_meter',
                 state_topic: `${topicPrefix}/smart_metering/heat_acc_meter/state`,
                 availability_topic: `${topicPrefix}/smart_metering/heat_acc_meter/availability`,
+                unit_of_measurement: 'm³',
+                device_class: 'water',
+                precision: 1,
+            },
+            {
+                id: 'gas_acc_meter',
+                name: '누적 가스 사용량',
+                unique_id: 'commax_gas_acc_meter',
+                state_topic: `${topicPrefix}/smart_metering/gas_acc_meter/state`,
+                availability_topic: `${topicPrefix}/smart_metering/gas_acc_meter/availability`,
                 unit_of_measurement: 'm³',
                 device_class: 'water',
                 precision: 1,
@@ -795,6 +818,8 @@ function analyzeAndDiscoverMetering(bytes, discoveredMeters, mqttClient, saveSta
         mqttClient.publish(`${topicPrefix}/smart_metering/warm_acc_meter/state`, accWarm.toString(), { retain: true });
         mqttClient.publish(`${topicPrefix}/smart_metering/heat_meter/state`, heat.toString(), { retain: true });
         mqttClient.publish(`${topicPrefix}/smart_metering/heat_acc_meter/state`, accHeat.toString(), { retain: true });
+        mqttClient.publish(`${topicPrefix}/smart_metering/gas_meter/state`, gas.toString(), { retain: true });
+        mqttClient.publish(`${topicPrefix}/smart_metering/gas_acc_meter/state`, accGas.toString(), { retain: true });
     }
 
 
